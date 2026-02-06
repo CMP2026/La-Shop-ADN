@@ -1,84 +1,224 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>ERP La Shop ADN</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>ERP ADN - Pointage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1c2d;
-      color: white;
-    }
+<style>
 
-    header {
-      background: #102a44;
-      padding: 12px 15px;
-      font-size: 20px;
-      font-weight: bold;
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b1c2d;
+  color:white;
+}
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
+header{
+  background:#102a44;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-size:20px;
+  font-weight:bold;
+}
 
-    header img {
-      height: 45px;
-    }
+header img{
+  height:45px;
+}
 
-    .menu {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      padding: 20px;
-    }
+.container{
+  max-width:420px;
+  margin:auto;
+  padding:20px;
+}
 
-    .btn {
-      background: #1e88e5;
-      border-radius: 10px;
-      padding: 25px 10px;
-      text-align: center;
-      font-size: 16px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
-    }
+.box{
+  background:linear-gradient(#1b3d5c,#102a44);
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 0 8px rgba(0,0,0,0.5);
+}
 
-    .btn:hover {
-      background: #1976d2;
-    }
+h2{
+  text-align:center;
+  margin:10px 0;
+}
 
-    .btn:active {
-      background: #1565c0;
-    }
-  </style>
+select,input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
+  margin-top:5px;
+}
+
+.btns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+button{
+  padding:15px;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.start{
+  background:#1976d2;
+  color:white;
+}
+
+.stop{
+  background:#c62828;
+  color:white;
+}
+
+.status{
+  background:#0e2438;
+  padding:10px;
+  border-radius:6px;
+  margin-top:10px;
+}
+
+.log{
+  background:#0e2438;
+  padding:10px;
+  border-radius:6px;
+  margin-top:10px;
+  font-size:14px;
+}
+
+.ok{
+  color:#4caf50;
+}
+
+</style>
 </head>
 
 <body>
 
 <header>
-  <img src="adn logo.png" alt="Logo ADN">
-  <div>ERP — La Shop ADN</div>
+  <img src="adn logo.png">
+  ERP ADN – Pointage
 </header>
 
-<div class="menu">
+<div class="container">
 
-  <div class="btn">👤 Clients</div>
-  <div class="btn">📁 Projets</div>
+<div class="box">
 
-  <div class="btn">🛠 Production</div>
-  <div class="btn">✅ Qualité</div>
+<h2>Employé</h2>
 
-  <div class="btn">💰 Facturation</div>
-  <div class="btn">📊 KPI</div>
-
-  <div class="btn">📷 Photos</div>
-  <div class="btn">⚙️ Paramètres</div>
+<select id="employe">
+<option value="">-- Choisir --</option>
+<option>Mario</option>
+<option>Nelson</option>
+<option>Daniel</option>
+<option>Denis</option>
+<option>Martin</option>
+<option>Marc</option>
+</select>
 
 </div>
+
+<div class="box">
+
+<h2>Job / WO</h2>
+
+<input id="job" placeholder="WO-00045">
+
+</div>
+
+<div class="box">
+
+<div class="btns">
+
+<button class="start" onclick="startJob()">START</button>
+<button class="stop" onclick="stopJob()">STOP</button>
+
+</div>
+
+<div class="status" id="status">
+Statut : STOPPÉ
+</div>
+
+</div>
+
+<div class="box">
+
+<h2>Historique</h2>
+
+<div class="log" id="log">
+Aucun travail.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let startTime = null;
+let actif = false;
+
+function startJob(){
+
+  let emp = document.getElementById("employe").value;
+  let job = document.getElementById("job").value;
+
+  if(emp=="" || job==""){
+    alert("Choisis un employé et un Job.");
+    return;
+  }
+
+  if(actif){
+    alert("Job déjà actif");
+    return;
+  }
+
+  startTime = new Date();
+  actif = true;
+
+  document.getElementById("status").innerHTML =
+  "Statut : Job actif ("+emp+" / "+job+")";
+}
+
+function stopJob(){
+
+  if(!actif){
+    alert("Aucun job actif");
+    return;
+  }
+
+  let fin = new Date();
+  let diff = (fin-startTime)/3600000;
+
+  let emp = document.getElementById("employe").value;
+  let job = document.getElementById("job").value;
+
+  let ligne = 
+  "✔ STOP OK – "+emp+
+  " / "+job+
+  " ("+diff.toFixed(2)+" h)";
+
+  document.getElementById("log").innerHTML =
+  "<div class='ok'>"+ligne+"</div>";
+
+  document.getElementById("status").innerHTML =
+  "Statut : STOPPÉ";
+
+  actif=false;
+}
+
+</script>
 
 </body>
 </html>
