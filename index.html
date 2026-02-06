@@ -2,103 +2,89 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>ERP ADN - Pointage</title>
+<title>ERP ADN – Gestion Production</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b1c2d;
-  color:white;
+margin:0;
+font-family:Arial;
+background:#071a2e;
+color:white;
 }
 
 header{
-  background:#102a44;
-  padding:15px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  font-size:20px;
-  font-weight:bold;
+background:#102a44;
+padding:15px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:12px;
+font-size:22px;
+font-weight:bold;
 }
 
-header img{
-  height:45px;
-}
+header img{height:45px;}
 
 .container{
-  max-width:420px;
-  margin:auto;
-  padding:20px;
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
 .box{
-  background:linear-gradient(#1b3d5c,#102a44);
-  border-radius:10px;
-  padding:15px;
-  margin-bottom:15px;
-  box-shadow:0 0 8px rgba(0,0,0,0.5);
+background:linear-gradient(#183d60,#0e2842);
+border-radius:12px;
+padding:18px;
+margin-bottom:20px;
+box-shadow:0 0 10px black;
 }
 
-h2{
-  text-align:center;
-  margin:10px 0;
+h2{text-align:center;}
+
+input,select,textarea{
+width:100%;
+padding:12px;
+border:none;
+border-radius:6px;
+margin:8px 0;
+font-size:16px;
 }
 
-select,input{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:6px;
-  font-size:16px;
-  margin-top:5px;
-}
+textarea{height:70px;}
 
 .btns{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
 }
 
 button{
-  padding:15px;
-  font-size:18px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold;
+padding:15px;
+border:none;
+border-radius:8px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
 }
 
-.start{
-  background:#1976d2;
-  color:white;
+.start{background:#1976d2;}
+.stop{background:#c62828;}
+.admin{background:#2e7d32;}
+
+.status,.log{
+background:#061628;
+padding:12px;
+border-radius:6px;
+margin-top:10px;
 }
 
-.stop{
-  background:#c62828;
-  color:white;
-}
+.ok{color:#4caf50;}
 
-.status{
-  background:#0e2438;
-  padding:10px;
-  border-radius:6px;
-  margin-top:10px;
-}
-
-.log{
-  background:#0e2438;
-  padding:10px;
-  border-radius:6px;
-  margin-top:10px;
-  font-size:14px;
-}
-
-.ok{
-  color:#4caf50;
+.jobline{
+border-bottom:1px solid #24405f;
+padding:6px;
 }
 
 </style>
@@ -107,18 +93,19 @@ button{
 <body>
 
 <header>
-  <img src="adn logo.png">
-  ERP ADN – Pointage
+<img src="adn logo.png">
+ERP ADN – Production
 </header>
 
 <div class="container">
 
+<!-- CHEF -->
 <div class="box">
 
-<h2>Employé</h2>
+<h2>👨‍🏭 Chef d’équipe</h2>
 
-<select id="employe">
-<option value="">-- Choisir --</option>
+<select id="chefEmp">
+<option value="">Assigner employé</option>
 <option>Mario</option>
 <option>Nelson</option>
 <option>Daniel</option>
@@ -127,17 +114,36 @@ button{
 <option>Marc</option>
 </select>
 
+<input id="desc" placeholder="Description du travail">
+
+<input id="client" placeholder="Nom du client">
+
+<input id="contact" placeholder="Contact client">
+
+<input type="date" id="livraison">
+
+<button class="admin" onclick="createJob()">➕ Créer Job</button>
+
+<div id="jobMsg"></div>
+
 </div>
 
+<!-- OPERATEUR -->
 <div class="box">
 
-<h2>Job / WO</h2>
+<h2>👷 Opérateur</h2>
 
-<input id="job" placeholder="WO-00045">
+<select id="emp">
+<option value="">Choisir employé</option>
+<option>Mario</option>
+<option>Nelson</option>
+<option>Daniel</option>
+<option>Denis</option>
+<option>Martin</option>
+<option>Marc</option>
+</select>
 
-</div>
-
-<div class="box">
+<select id="jobSelect"></select>
 
 <div class="btns">
 
@@ -146,19 +152,25 @@ button{
 
 </div>
 
-<div class="status" id="status">
-Statut : STOPPÉ
-</div>
+<div class="status" id="status">Statut : STOPPÉ</div>
 
 </div>
 
+<!-- SUIVI -->
 <div class="box">
 
-<h2>Historique</h2>
+<h2>📞 Suivis clients</h2>
 
-<div class="log" id="log">
-Aucun travail.
+<div id="suivis"></div>
+
 </div>
+
+<!-- HISTORIQUE -->
+<div class="box">
+
+<h2>📋 Historique</h2>
+
+<div id="log"></div>
 
 </div>
 
@@ -166,56 +178,159 @@ Aucun travail.
 
 <script>
 
-let startTime = null;
-let actif = false;
+let jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+let compteur = Number(localStorage.getItem("compteur")) || 1;
+let actif = null;
 
-function startJob(){
+// INIT
+updateJobs();
+loadLog();
+loadSuivis();
 
-  let emp = document.getElementById("employe").value;
-  let job = document.getElementById("job").value;
+// CREER JOB
+function createJob(){
 
-  if(emp=="" || job==""){
-    alert("Choisis un employé et un Job.");
-    return;
-  }
+let emp = chefEmp.value;
+let d = desc.value;
+let c = client.value;
+let ct = contact.value;
+let liv = livraison.value;
 
-  if(actif){
-    alert("Job déjà actif");
-    return;
-  }
-
-  startTime = new Date();
-  actif = true;
-
-  document.getElementById("status").innerHTML =
-  "Statut : Job actif ("+emp+" / "+job+")";
+if(emp==""||d==""||c==""||ct==""||liv==""){
+alert("Remplir tous les champs");
+return;
 }
 
+let id="ADN-"+String(compteur).padStart(3,"0");
+compteur++;
+
+let rappel=new Date(liv);
+rappel.setDate(rappel.getDate()+7);
+
+let job={
+id,emp,d,c,ct,liv,
+rappel:rappel.toISOString().split("T")[0],
+start:null,end:null,time:0
+};
+
+jobs.push(job);
+
+save();
+
+jobMsg.innerHTML="✅ "+id+" créé";
+
+updateJobs();
+loadSuivis();
+}
+
+// MAJ SELECT
+function updateJobs(){
+
+jobSelect.innerHTML="";
+
+jobs.forEach(j=>{
+if(!j.end){
+let o=document.createElement("option");
+o.value=j.id;
+o.text=j.id+" - "+j.d;
+jobSelect.appendChild(o);
+}
+});
+}
+
+// START
+function startJob(){
+
+let emp=empSelect();
+let id=jobSelect.value;
+
+if(!emp||!id){alert("Choisir");return;}
+
+let j=jobs.find(x=>x.id==id);
+
+if(j.start){alert("Déjà actif");return;}
+
+j.start=Date.now();
+actif=j;
+
+save();
+
+status.innerText="Statut : "+id+" en cours";
+}
+
+function empSelect(){
+return document.getElementById("emp").value;
+}
+
+// STOP
 function stopJob(){
 
-  if(!actif){
-    alert("Aucun job actif");
-    return;
-  }
+if(!actif){alert("Aucun actif");return;}
 
-  let fin = new Date();
-  let diff = (fin-startTime)/3600000;
+let h=(Date.now()-actif.start)/3600000;
 
-  let emp = document.getElementById("employe").value;
-  let job = document.getElementById("job").value;
+actif.time+=h;
+actif.end=Date.now();
 
-  let ligne = 
-  "✔ STOP OK – "+emp+
-  " / "+job+
-  " ("+diff.toFixed(2)+" h)";
+addLog(actif,h);
 
-  document.getElementById("log").innerHTML =
-  "<div class='ok'>"+ligne+"</div>";
+actif.start=null;
+actif=null;
 
-  document.getElementById("status").innerHTML =
-  "Statut : STOPPÉ";
+save();
+updateJobs();
 
-  actif=false;
+status.innerText="Statut : STOPPÉ";
+}
+
+// LOG
+function addLog(j,h){
+
+let log=JSON.parse(localStorage.getItem("log"))||[];
+
+log.unshift({
+id:j.id,
+emp:j.emp,
+desc:j.d,
+client:j.c,
+time:h.toFixed(2)
+});
+
+localStorage.setItem("log",JSON.stringify(log));
+
+loadLog();
+}
+
+// HISTO
+function loadLog(){
+
+let log=JSON.parse(localStorage.getItem("log"))||[];
+logDiv.innerHTML="";
+
+log.forEach(l=>{
+logDiv.innerHTML+=
+"<div class='jobline ok'>✔ "+l.id+
+" | "+l.emp+
+" | "+l.desc+
+" | "+l.time+" h</div>";
+});
+}
+
+function loadSuivis(){
+
+let today=new Date().toISOString().split("T")[0];
+suivis.innerHTML="";
+
+jobs.filter(j=>j.rappel<=today&&!j.suivi).forEach(j=>{
+suivis.innerHTML+=
+"<div class='jobline'>📞 "+j.c+
+" ("+j.ct+") – "+j.id+"</div>";
+});
+}
+
+function save(){
+localStorage.setItem("jobs",JSON.stringify(jobs));
+localStorage.setItem("compteur",compteur);
 }
 
 </script>
