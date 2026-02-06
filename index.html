@@ -15,10 +15,18 @@
 
     header {
       background: #102a44;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
+      padding: 12px 15px;
+      font-size: 20px;
       font-weight: bold;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    header img {
+      height: 45px;
     }
 
     .menu {
@@ -36,6 +44,11 @@
       font-size: 16px;
       cursor: pointer;
       user-select: none;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #1976d2;
     }
 
     .btn:active {
@@ -47,7 +60,8 @@
 <body>
 
 <header>
-  ERP — La Shop ADN
+  <img src="adn logo.png" alt="Logo ADN">
+  <div>ERP — La Shop ADN</div>
 </header>
 
 <div class="menu">
